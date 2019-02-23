@@ -1,0 +1,17 @@
+move
+move
+left
+right
+place 1,1,NORTH
+move
+move
+right
+left
+place 0,0,EAST
+move
+move
+left
+move
+move
+report
+# 2,2,NORTH

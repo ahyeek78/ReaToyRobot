@@ -3,23 +3,21 @@
 
 #####################################################################################################################################################################
 ## Start Date: 19-Feb-2019
-## Last Modified: 19-Feb-2019
-## Version: 1.0
+## Last Modified: 23-Feb-2019
+## Version: 1.5
 ## 
 ## TDD - REA Robot Training Program 
-## 20-Feb   Initial testing skelaton developed.
-## 21-Feb   Add test_rea_robot_object and test_rea_robot_command.
-## 22-Feb   Add in 4 corner edge movement ignore test case.
+## 20-Feb-2019      Initial testing skelaton developed.
+## 21-Feb-2019      Add test_rea_robot_object and test_rea_robot_command.
+## 22-Feb-2019      Add in 4 corner edge movement ignore test case.
+## 23-Feb-2019      Add in command file line test cases.
 #####################################################################################################################################################################
 
 import unittest
 from rea_robot import *
 
 class ReaRobotTests(unittest.TestCase):
-    rr = ReaRobot()
-
-    def test_rea_robot(self):
-        self.assertEqual(hello_rea_robot(), 'Hello Rea Toy Robot!!!')
+    rr = ReaRobot()  
 
     def test_rea_robot_object(self):        
         self.assertEqual(self.rr.report_name(), 'Rea Toy Robot !!!')
@@ -92,6 +90,19 @@ class ReaRobotTests(unittest.TestCase):
         self.rr.left()
         ## Robot remain upper left corner. 
         self.assertEqual(self.rr.get_report(), "0,4,SOUTH")
+
+    def test_rea_robot_process_command_file_1(self):
+        self.rr.process_command_file("cmd_test_1.txt")
+        self.assertEqual(self.rr.get_report(), "2,2,NORTH")
+
+    def test_rea_robot_process_command_file_2(self):
+        self.rr.process_command_file("cmd_test_2.txt")
+        self.assertEqual(self.rr.get_report(), "0,0,WEST")
+
+    def test_rea_robot_process_command_file_3(self):
+        self.rr.process_command_file("cmd_test_3.txt")
+        self.assertEqual(self.rr.get_report(), "4,4,EAST")
+
 
 if __name__ == '__main__':
     unittest.main()

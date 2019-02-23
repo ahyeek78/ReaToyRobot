@@ -3,17 +3,16 @@
 
 #####################################################################################################################################################################
 ## Start Date: 19-Feb-2019
-## Last Modified: 19-Feb-2019
-## Version: 1.0
+## Last Modified: 23-Feb-2019
+## Version: 1.5
 ## 
 ## REA Robot Training Program
 ##
 ## Commnad Examples:
-## python rea-robot.py --help
-## python 
+## python rea_robot.py -i <command file> | -c : Command line interface | -h : Help
 ##
 ## Version Tracking
-## Ver 1.0.0
+## Ver 1.5.3
 ## 18-Feb-2019      Start 1st skelaton.
 ## 19-Feb-2019      Develop ReaRobot class using Singleton design pattern.
 ## 20-Feb-2019      Develop basic functions and checking functions.
@@ -21,6 +20,7 @@
 ## 22-Feb-2019      Implement command line interactive mode for Rea Robot.
 ## 22-Feb-2019      Implement error checking for place position with respect to dimension.
 ## 23-Feb-2019      Implement file input command.
+## 23-Feb-2019      Final testing and refactoring.
 #####################################################################################################################################################################
 
 ### Imports packages
@@ -53,6 +53,9 @@ class ReaRobot:
 
     ## Define available command list for checking.
     lst_cmd = ['PLACE', 'MOVE', 'LEFT', 'RIGHT', 'REPORT']
+
+    ## Command line file Processing mode
+    b_cmd_mode = False
    
     @staticmethod 
     def get_instance():
@@ -99,9 +102,10 @@ class ReaRobot:
         print(self. get_report())
 
     def get_dir(self, f):
-        """Get facing direction number by given facing string."""
+        """Get facing direction number by given facing string."""        
+        ff = f.upper()
         for d, facing in self.dict_dir.items():
-            if (facing == f):
+            if (facing == ff):
                 dir = int(d)
                 break
         return dir
@@ -124,16 +128,17 @@ class ReaRobot:
             print("Position setting Y = {} is invalid! Y value must within range [{}, {}].".format(y, 0, self.edge_y))
             return
 
-        if (f in self.dict_dir.values()):            
+        ff = f.upper()
+        if (ff in self.dict_dir.values()):            
             allow_update = True
         else:
             print("{} is not a valid facing direction! Please input values: {}".format(f, self.dict_dir.values()))
             return
         
         if(allow_update):
-        self.curr_x = x
-        self.curr_y = y
-        self.curr_dir = self.get_dir(f)
+            self.curr_x = x
+            self.curr_y = y
+            self.curr_dir = self.get_dir(f)
 
     def do_move(self):
         ## Direction facing NORTH
@@ -182,7 +187,9 @@ class ReaRobot:
         if self.allow_move():
             self.do_move()
         else:
-            print ("Robot at edge! Ignore move.")
+            ## Surpress error message when file processing mode.
+            if(not self.b_cmd_mode):
+                print ("Robot at edge! Ignore move.")
 
     def left(self):
         self.turn_left()
@@ -192,10 +199,12 @@ class ReaRobot:
 
     def process_command_file(self, cmd_filename):
         """Process content in a command file by given a filename."""
-        beginning_flag = True
+        self.b_cmd_mode = True
+        beginning_flag = True        
         with open(cmd_filename, "r") as file_handler:
             for cmd_line in file_handler:
                 cmd = cmd_line.strip()
+                cmd = cmd.lower()
 
                 # Ignore input line start with '#' as comment.
                 if(not cmd.startswith("#")):
@@ -205,7 +214,7 @@ class ReaRobot:
                     else:
                         beginning_flag = False
                         self.process_command(cmd)
-
+        
     def process_command(self, cmd_line):
         """Process command line obtain from file."""        
         ## Process PLACE command

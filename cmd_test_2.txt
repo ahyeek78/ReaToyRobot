@@ -1,0 +1,36 @@
+place 1,1,NORTH
+move
+move
+move
+move
+move
+right
+move
+move
+move
+move
+move
+move
+move
+right
+move
+move
+move
+move
+move
+move
+move
+move
+move
+right
+move
+move
+move
+move
+move
+move
+move
+move
+move
+report
+# 0,0,WEST
