@@ -18,15 +18,14 @@
 ## 19-Feb-2019      Develop ReaRobot class using Singleton design pattern.
 ## 20-Feb-2019      Develop basic functions and checking functions.
 ## 21-Feb-2019      Complete all movement function and edge checking condition.
+## 22-Feb-2019      Implement command line interactive mode for Rea Robot.
+## 22-Feb-2019      Implement error checking for place position with respect to dimension.
+## 23-Feb-2019      Implement file input command.
 #####################################################################################################################################################################
 
 ### Imports packages
 import sys, getopt, os
-
-############################################################################################################
-## Global Variables
-############################################################################################################
-
+from rea_robot_terminal import *
 
 ############################################################################################################
 ## Class Defination
@@ -108,6 +107,30 @@ class ReaRobot:
         return dir
 
     def place(self, x=0, y=0, f="NORTH"):
+        """
+        Setting a new position and direction for robot. 
+        Robot will take new position and direction only when all parameters are correct.
+        """
+        allow_update = False
+        if(x >= 0 and x < self.dim_x):            
+            allow_update = True
+        else:
+            print("Position setting X = {} is invalid! X value must within range [{}, {}].".format(x, 0, self.edge_x))
+            return
+
+        if(y >= 0 and y < self.dim_y):            
+            allow_update = True
+        else:
+            print("Position setting Y = {} is invalid! Y value must within range [{}, {}].".format(y, 0, self.edge_y))
+            return
+
+        if (f in self.dict_dir.values()):            
+            allow_update = True
+        else:
+            print("{} is not a valid facing direction! Please input values: {}".format(f, self.dict_dir.values()))
+            return
+        
+        if(allow_update):
         self.curr_x = x
         self.curr_y = y
         self.curr_dir = self.get_dir(f)
@@ -167,20 +190,56 @@ class ReaRobot:
     def right(self):
         self.turn_right()
 
+    def process_command_file(self, cmd_filename):
+        """Process content in a command file by given a filename."""
+        beginning_flag = True
+        with open(cmd_filename, "r") as file_handler:
+            for cmd_line in file_handler:
+                cmd = cmd_line.strip()
+
+                # Ignore input line start with '#' as comment.
+                if(not cmd.startswith("#")):
+                    if(beginning_flag and ("place" not in cmd)):
+                        ## Skip other commands until 1st place found.
+                        continue
+                    else:
+                        beginning_flag = False
+                        self.process_command(cmd)
+
+    def process_command(self, cmd_line):
+        """Process command line obtain from file."""        
+        ## Process PLACE command
+        if ("place" in cmd_line):            
+            e = cmd_line.split()
+            p = e[1].split(",")
+            self.place(int(p[0]), int(p[1]), p[2])
+        elif ("move" in cmd_line):
+            self.move()
+        elif ("left" in cmd_line):
+            self.left()
+        elif ("right" in cmd_line):
+            self.right()
+        elif ("report" in cmd_line):
+            self.report()
+        else:
+            print("Command : {} not recognize! Ignoring ...".format(cmd_line))
+
 
 ############################################################################################################
 ## Function Defination
 ############################################################################################################
-def hello_rea_robot():
-    return "Hello Rea Toy Robot!!!"
-
 def main(argv):
     inputfile = ''
     try:
         opts, args = getopt.getopt(argv,"chi:",["ifile=","command"])
+
     except getopt.GetoptError:
-        print ('rea_robot.py -i <command file>')
+        print ('rea_robot.py -i <command file> | -c : Command line interface | -h : Help')
         sys.exit(2)
+
+    ## Initiate ReaToyRobot.
+    rr = ReaRobot()
+
     for opt, arg in opts:
         if opt == '-h':
             print ('Help - Rea Toy Robot ver 1.0.0')            
@@ -193,16 +252,25 @@ def main(argv):
             
             ## Output information 
             print ('Input command file : {}\n\n'.format(inputfile))
+
+            ## Get robot to process command file.
+            rr.process_command_file(inputfile)
+            
+            ## Get robot to report itself after processing command file.
+            rr.report_yourself()
+
             sys.exit()
 
         elif opt in ("-c", "--command"):
             print ("Rea Toy Robot in Command Line Mode ...\n")
+
+            shell = rea_robot_terminal()
+            shell.register_rea_robot(rr)
+            shell.prompt = "Rea-Robot >> "
+            shell.cmdloop()
+
             sys.exit()
     
-    ## Initiate ReaToyRobot.
-    rr = ReaRobot()
-    rr.report_yourself()
-
 ############################################################################################################
 ## Main program started.
 ############################################################################################################
